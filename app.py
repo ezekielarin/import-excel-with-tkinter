@@ -3,17 +3,15 @@ from tkinter import ttk
 from tkinter import *
 import pandas as pd
 import numpy as np
+import math
 from tkinter import filedialog as fd
-
 from tkinter.filedialog import askopenfilename, asksaveasfilename
-
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
  
-
 window = tk.Tk()
-window.title("Tab Widget")
+window.title("Well Testt")
 window.geometry("1900x800")
 tabControl = ttk.Notebook(window)
 
@@ -194,7 +192,7 @@ def popwin():
     open_button = ttk.Button(top,text='Select a File', command=select_file)
     open_button.pack(expand=True)
 
-    submit = ttk.Button(top, text='Submit', command=lambda: popwin())
+   # submit = ttk.Button(top, text='Submit', command=lambda: popwin())
    # submit.grid(column=0, row=0, sticky=tk.W)
     submit.pack()
 
@@ -211,11 +209,10 @@ def select_file(graph):
     filename = fd.askopenfilename(
         title='Open a file', initialdir='/documents', filetypes=filetypes)
     #df = pd.read_csv(filename)
-    headers = ['time', 'pressure']
+  #  headers = ['time', 'pressure']
     
     df = pd.read_excel(filename)
     dd_data = df
-   # df['d_time'] = (df.time - df.time)/df.time;
    
    # print(df)
 
@@ -225,35 +222,41 @@ def select_file(graph):
         buildup_plot(df)
         
    # file_dir+filename
-    
-    
 
 
 def draw_down_plot(data):
+   
+    print(data)
     
-    pi = 4680
+    pi = data['pi'].values[0]
+
     data['log_time'] = np.log(data.time);
-    data['d_pressure'] = pi - data.pressure;
+    data['dp'] = data.pressure - pi;
     
     if 'dt' not in data:
         data['dt'] = data.time
     
     fig = Figure(figsize = (200, 200), dpi = 80);
-    t = data.loc[:,"time"]; p = data.loc[:,"pressure"]; 
+    t = data.loc[:,"time"]; 
+    log_t = data.loc[:,"log_time"]; 
+    dp = data.loc[:,"dp"]
+    p = data.loc[:,"pressure"]; 
     
-    print(dd_data)
-    semi_log = fig.add_subplot(221); 
-    
-    semi_log.title.set_text('Semi Log Plot');
-    semi_log.scatter(t,p); 
+
+    plot1 = fig.add_subplot(221); 
+    plot1.title.set_text('Semi Log Plot');
+    plot1.grid(True, which="both")
+    plot1.semilogy(t,p)
     
     plot2 = fig.add_subplot(222);
-    plot2.plot(t,p); 
+    plot2.plot(t, p); 
+    plot2.grid(True, which="both")
     plot2.title.set_text('Cartesian Plot'); 
-    
+     
     plot3 = fig.add_subplot(223)
-    plot3.loglog(t,p);
-    plot3.title.set_text('thrd Plot'); #
+    plot3.loglog(t,dp);
+    plot3.grid(True, which="both")
+    plot3.title.set_text('MDH Log log'); #
    # plot2.polyfit(x,y, '--')
     
     
@@ -269,31 +272,68 @@ def draw_down_plot(data):
 ######## log log plot
 def buildup_plot(data):
     
-   pwf = 4680
-   data['log_time'] = np.log(data.t);
-   data['dp'] = data.pws - pwf;
-   data['dt'] = data.t;
+  
+   Qo = 1
+   Uo = 1
+   ct = 1
+   rw = 1
+   h = 1;
+   np=1
    
-   fig = Figure(figsize = (200, 200), dpi = 80);
+
+   pi = data['pi'].values[0]
+   psi = data['psi'].values[0]
+   Ti = data['time'].values[0]
    
-   p = data.loc[:,"t"]; tp = data.loc[:,"pws"]; 
    
-   dp = data.loc[:,"dp"]; dt = data.loc[:,"dt"]; 
    
+   data['dp'] = data.pressure - psi;
+  
+
+   t = data.loc[:,"time"];
+   data['log_time'] = t;
+   
+   dp = data.loc[:,"dp"]; 
+  
+   p = data.loc[:,"pressure"]; 
+   
+   if 'tp' not in data:
+       data['tp'] = (24*np)/Qo;
+       
+   if 'np' not in data:
+       data['dt'] = data.loc[:,"time"];
+       
+   tp = data.loc[:,"tp"]; 
+   data['dt'] = Ti - tp
+   dt = data.loc[:,"dt"];
+   tpdt = (tp+dt)/dt
+  
+
+
+   fig = Figure(figsize = (200, 200), dpi = 80); 
    print(dd_data)
    semi_log = fig.add_subplot(221); 
    
-   semi_log.title.set_text('Semi Log Plot');
-   semi_log.scatter(p,tp); 
+   semi_log.title.set_text('Horners plot - Semi Log Plot');
+   semi_log.semilogx(t, p); 
+   semi_log.scatter(t, p); 
+   semi_log.grid(True, which="both")
    
    plot2 = fig.add_subplot(222);
-   plot2.loglog(dp, t); 
+   plot2.loglog(tp, p); 
    plot2.title.set_text('Log-log Plot'); 
+   plot2.grid(True, which="both")
    
    plot3 = fig.add_subplot(223)
-   plot3.loglog(p,tp);
-   plot3.title.set_text('thrd Plot'); #
-  # plot2.polyfit(x,y, '--')
+   plot3.semilogy(t,tp);
+   plot3.grid(True, which="both")
+   plot3.title.set_text('semi log'); #
+   
+   plot4 = fig.add_subplot(224)
+   plot4.semilogy(tpdt,tp); 
+   plot4.loglog(dt,dp); 
+   plot4.grid(True, which="both")
+   plot4.title.set_text('semi log'); #
    
    
    canvas = FigureCanvasTkAgg(fig, master = center2);
@@ -310,8 +350,6 @@ def clear_canvas():
     
     pass
         
-        
-
 
 def calculate_pressure():
 
