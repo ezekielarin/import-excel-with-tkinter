@@ -307,7 +307,7 @@ def buildup_plot(data):
        data['dt'] = data.loc[:,"time"];
        
    tp = data.loc[:,"tp"]; 
-   data['dt'] = Ti - tp
+   data['dt'] = tp-Ti 
    dt = data.loc[:,"dt"];
 
    tpdt = (tp+dt)/dt;
@@ -320,7 +320,7 @@ def buildup_plot(data):
    
    semi_log.title.set_text('Horners plot - Semi Log Plot');
   # semi_log.semilogx(t, p); 
-   semi_log.scatter(tpdt,p); 
+   semi_log.scatter(tpdt,p);  
    semi_log.grid(True, which="both")
    
    plot2 = fig.add_subplot(222);
@@ -362,7 +362,7 @@ def calculate_pressure():
     ct = 1
     rw = 1
     h = 1;
-    pi =2
+    pi = 2
     Pwf = pi - ((162.6*Qo*Bo*Uo)/k*h)(log(k*t/O*U*ct*rwˆ2)-3.23+0.87*s)
     return Pwf
 
