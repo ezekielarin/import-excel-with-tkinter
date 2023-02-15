@@ -246,15 +246,18 @@ def draw_down_plot(data):
     plot1 = fig.add_subplot(221); 
     plot1.title.set_text('Semi Log Plot');
     plot1.grid(True, which="both")
-    plot1.semilogy(t,p)
+    plot1.semilogx(t,p)
+    plot1.scatter(t,p)
     
     plot2 = fig.add_subplot(222);
-    plot2.plot(t, p); 
+   # plot2.plot(log_t, p); 
+    plot2.scatter(t, p)
     plot2.grid(True, which="both")
     plot2.title.set_text('Cartesian Plot'); 
      
     plot3 = fig.add_subplot(223)
-    plot3.loglog(t,dp);
+    plot3.loglog();
+    plot3.scatter(t,dp);
     plot3.grid(True, which="both")
     plot3.title.set_text('MDH Log log'); #
    # plot2.polyfit(x,y, '--')
@@ -298,7 +301,7 @@ def buildup_plot(data):
    p = data.loc[:,"pressure"]; 
    
    if 'tp' not in data:
-       data['tp'] = (24*np)/Qo;
+       data['tp'] = t;
        
    if 'np' not in data:
        data['dt'] = data.loc[:,"time"];
@@ -306,7 +309,8 @@ def buildup_plot(data):
    tp = data.loc[:,"tp"]; 
    data['dt'] = Ti - tp
    dt = data.loc[:,"dt"];
-   tpdt = (tp+dt)/dt
+
+   tpdt = (tp+dt)/dt;
   
 
 
@@ -315,26 +319,22 @@ def buildup_plot(data):
    semi_log = fig.add_subplot(221); 
    
    semi_log.title.set_text('Horners plot - Semi Log Plot');
-   semi_log.semilogx(t, p); 
-   semi_log.scatter(t, p); 
+  # semi_log.semilogx(t, p); 
+   semi_log.scatter(tpdt,p); 
    semi_log.grid(True, which="both")
    
    plot2 = fig.add_subplot(222);
-   plot2.loglog(tp, p); 
+   plot2.loglog(); 
+   plot2.scatter(t,dp); 
    plot2.title.set_text('Log-log Plot'); 
    plot2.grid(True, which="both")
    
-   plot3 = fig.add_subplot(223)
-   plot3.semilogy(t,tp);
-   plot3.grid(True, which="both")
-   plot3.title.set_text('semi log'); #
+   #plot3 = fig.add_subplot(223)
+  # plot3.semilogy(t,p);
+  # plot3.grid(True, which="both")
+  # plot3.title.set_text('semi log'); #
    
-   plot4 = fig.add_subplot(224)
-   plot4.semilogy(tpdt,tp); 
-   plot4.loglog(dt,dp); 
-   plot4.grid(True, which="both")
-   plot4.title.set_text('semi log'); #
-   
+  
    
    canvas = FigureCanvasTkAgg(fig, master = center2);
    canvas.draw()
