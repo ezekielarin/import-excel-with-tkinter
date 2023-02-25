@@ -26,15 +26,14 @@ tabControl.add(tab3, text ='DST')
 tabControl.add(tab4, text ='Injectory')
 tabControl.pack(expand = 1, fill ="both")
 
-
-
-ttk.Label(tab2,
-		text =" ").grid(column = 0,
-									row = 0,
-									padx = 30,
-									pady = 30)
-
  
+
+drawdown_count = 0
+buildup_count = 0
+
+
+#ttk.Label(tab2, text =" ").grid(column = 0, row = 0,padx = 30, pady = 30)
+
 ############ Frames for tab 1
 
 top_frame = Frame(tab1, bg='cyan', width=450, height=50, pady=3)
@@ -128,7 +127,7 @@ new_button = ttk.Button(top_frame, text='Import Data', command  = lambda: select
 #new_button.pack()
 new_button.grid(column=0, row=1, sticky=tk.W, padx=5, pady=0)
 
-new_button = ttk.Button(top_frame, text='plot Log', command  = lambda: generate_semi_log_plot(data))
+new_button = ttk.Button(top_frame, text='plot Log', command  = lambda: drawdown_popwin())
 #new_button.pack(ipadx=0,ipady=5,expand=True)
 new_button.grid(column=1, row=1, sticky=tk.W, padx=5, pady=5)
 
@@ -178,10 +177,6 @@ def popwin():
     label = Label(top, text='Enter your Data')
     label.pack(ipadx=10, ipady=10)
 
-    constant = Entry(top)
-    #constant.grid(column=0, row=0, sticky=tk.W)
-    constant.pack()
-
 
     adfd_label = ttk.Label(top, text="sigma value:")
     adfd_label.pack()
@@ -198,6 +193,160 @@ def popwin():
 
     pass
 
+
+def drawdown_popwin(data):
+    top = Toplevel(window)
+    top.geometry("800x500")
+    top.title("Draw Down Graph")
+    
+   # body = Frame(top, bg='grey', width=50, height=40, padx=3, pady=3)
+   # btm_body = Frame(top, bg='white', width=450, height=45, pady=3)
+    #body.grid(row=1, sticky="nsew")
+   # btm_body.grid(row=3, sticky="ew")
+     
+
+
+     
+    pi = data['pi'].values[0]
+
+    data['log_time'] = np.log(data.time);
+    data['dp'] = data.pressure - pi;
+    
+    if 'dt' not in data:
+        data['dt'] = data.time
+    
+    fig = Figure(figsize = (200, 200), dpi = 80);
+    t = data.loc[:,"time"]; 
+    log_t = data.loc[:,"log_time"]; 
+    dp = data.loc[:,"dp"]
+    p = data.loc[:,"pressure"]; 
+    
+
+    plot1 = fig.add_subplot(221); 
+    plot1.title.set_text('Semi Log Plot');
+    plot1.grid(True, which="both")
+    plot1.semilogx(t,p)
+    plot1.scatter(t,p)
+    #semilog slope
+    slope, intercept = np.polyfit(t, dp, 1)
+    
+    plot2 = fig.add_subplot(222);
+   # plot2.plot(log_t, p); 
+    plot2.scatter(t, p)
+    plot2.grid(True, which="both")
+    plot2.title.set_text('Cartesian Plot')
+    #cartesian slope
+    slope, intercept = np.polyfit(t, dp, 1)
+     
+    plot3 = fig.add_subplot(223)
+    plot3.loglog();
+    plot3.scatter(t,dp);
+    plot3.grid(True, which="both")
+    plot3.title.set_text('MDH Log log'); 
+    #log log slope
+    slope, intercept = np.polyfit(t, dp, 1)
+   
+
+    
+    
+    print(slope)
+    print(intercept)
+    
+    
+    canvas = FigureCanvasTkAgg(fig, master = top);
+    canvas.draw()
+    
+    canvas.get_tk_widget().pack()
+    toolbar = NavigationToolbar2Tk(canvas, top)
+    toolbar.update()
+    canvas.get_tk_widget().pack()
+    
+
+    pass
+
+
+def buildup_popwin(data):
+    top = Toplevel(window)
+    top.geometry("800x500")
+    top.title("Buildup Graph")
+    
+   # body = Frame(top, bg='grey', width=50, height=40, padx=3, pady=3)
+   # btm_body = Frame(top, bg='white', width=450, height=45, pady=3)
+    #body.grid(row=1, sticky="nsew")
+   # btm_body.grid(row=3, sticky="ew")
+     
+    Qo = 1
+    Uo = 1
+    ct = 1
+    rw = 1
+    h = 1;
+    np=1
+   
+
+    pi = data['pi'].values[0]
+    psi = data['psi'].values[0]
+    Ti = data['time'].values[0]
+   
+   
+   
+    data['dp'] = data.pressure - psi;
+  
+
+    t = data.loc[:,"time"];
+    data['log_time'] = t;
+   
+    dp = data.loc[:,"dp"]; 
+  
+    p = data.loc[:,"pressure"]; 
+   
+    if 'tp' not in data:
+       data['tp'] = t;
+       
+    if 'np' not in data:
+       data['dt'] = data.loc[:,"time"];
+       
+    tp = data.loc[:,"tp"]; 
+    data['dt'] = tp-Ti 
+    dt = data.loc[:,"dt"];
+
+    tpdt = (tp+dt)/dt;
+  
+
+
+    fig = Figure(figsize = (200, 200), dpi = 80); 
+   # print(dd_data)
+    semi_log = fig.add_subplot(221); 
+   
+    semi_log.title.set_text('Horners plot - Semi Log Plot');
+  # semi_log.semilogx(t, p); 
+    semi_log.scatter(tpdt,p);  
+    semi_log.grid(True, which="both")
+   
+    plot2 = fig.add_subplot(222);
+    plot2.loglog(); 
+    plot2.scatter(t,dp); 
+    plot2.title.set_text('Log-log Plot'); 
+    plot2.grid(True, which="both")
+   
+   #plot3 = fig.add_subplot(223)
+  # plot3.semilogy(t,p);
+  # plot3.grid(True, which="both")
+  # plot3.title.set_text('semi log'); #
+
+    
+    
+    
+    canvas = FigureCanvasTkAgg(fig, master = top);
+    canvas.draw()
+    
+    canvas.get_tk_widget().pack()
+    toolbar = NavigationToolbar2Tk(canvas, top)
+    toolbar.update()
+    canvas.get_tk_widget().pack()
+    
+
+    pass
+
 def select_file(graph):
     filetypes = (
         ('csv', '*.csv'),
@@ -205,6 +354,8 @@ def select_file(graph):
        
     )
     global dd_data
+   
+    
     
     filename = fd.askopenfilename(
         title='Open a file', initialdir='/documents', filetypes=filetypes)
@@ -214,19 +365,37 @@ def select_file(graph):
     df = pd.read_excel(filename)
     dd_data = df
    
-   # print(df)
+    global drawdown_count
+    global buildup_count
+    print(drawdown_count)
 
     if(graph=="drawdown"):
-        draw_down_plot(df)
+        
+        if(drawdown_count==0):
+            drawdown_plot(df)
+           
+            drawdown_count = 1
+            
+        else:
+            drawdown_popwin(df)
+           
+        
     if(graph=="buildup"):
-        buildup_plot(df)
+        
+        if(buildup_count==0):
+            buildup_plot(df)
+           
+            buildup_count = 1
+            
+        else:
+           buildup_popwin(df)
+        
         
    # file_dir+filename
 
 
 def draw_down_plot(data):
-   
-    print(data)
+
     
     pi = data['pi'].values[0]
 
@@ -257,10 +426,13 @@ def draw_down_plot(data):
      
     plot3 = fig.add_subplot(223)
     plot3.loglog();
-    plot3.scatter(t,dp);
+    plot3.scatter(t,dp,);
     plot3.grid(True, which="both")
     plot3.title.set_text('MDH Log log'); #
-   # plot2.polyfit(x,y, '--')
+    
+   # np.polyfit(t,p, '--')
+    slope, intercept = np.polyfit(t, dp, 1)
+    print(slope)
     
     
     canvas = FigureCanvasTkAgg(fig, master = center);
