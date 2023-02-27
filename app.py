@@ -372,7 +372,7 @@ def select_file(graph):
     if(graph=="drawdown"):
         
         if(drawdown_count==0):
-            drawdown_plot(df)
+            draw_down_plot(df)
            
             drawdown_count = 1
             
