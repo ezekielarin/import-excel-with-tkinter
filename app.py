@@ -32,6 +32,8 @@ drawdown_count = 0
 buildup_count = 0
 
 
+
+
 #ttk.Label(tab2, text =" ").grid(column = 0, row = 0,padx = 30, pady = 30)
 
 ############ Frames for tab 1
@@ -537,5 +539,12 @@ def calculate_pressure():
     pi = 2
     Pwf = pi - ((162.6*Qo*Bo*Uo)/k*h)(log(k*t/O*U*ct*rwˆ2)-3.23+0.87*s)
     return Pwf
+
+#plot graph with this function
+def abline(slope, intercept, graph):
+    axes = plt.gca()
+    x_vals = np.array(axes.get_xlim())
+    y_vals = intercept + slope * x_vals
+    plt.plot(x_vals, y_vals, '--')
 
 window.mainloop()
